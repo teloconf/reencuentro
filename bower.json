@@ -1,0 +1,16 @@
+{
+  "name": "Reencuentro",
+  "authors": [
+    "Altafit I+D <gabriel.urresta@altafit.es>"
+  ],
+  "description": "Fiesta de Reencuentro",
+  "main": "index.html",
+  "license": "MIT",
+  "homepage": "/",
+  "dependencies": {
+    "polymerfire": "^0.9.4",
+    "iron-a11y-keys": "^1.0.6",
+    "paper-elements": "PolymerElements/paper-elements#^1.0.7",
+    "iron-elements": "PolymerElements/iron-elements#^1.0.10"
+  }
+}
