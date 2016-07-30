@@ -1,0 +1,148 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html" />
+<link rel="import" href="../../bower_components/polymerfire/firebase-app.html" />
+<link rel="import" href="../../bower_components/polymerfire/firebase-document.html" />
+<link rel="import" href="../../bower_components/paper-input/paper-input.html" />
+<link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html" />
+<link rel="import" href="/bower_components/iron-grid/iron-grid.html">
+
+<dom-module id="reencuentro-form">
+    <template>
+        <style>
+            :host{
+                display: block;
+            }
+            paper-button.custom {
+                --paper-button-ink-color: var(--paper-pink-a200);
+                /* These could also be individually defined for each of the
+                  specific css classes, but we'll just do it once as an example */
+                --paper-button-flat-keyboard-focus: {
+                    background-color: var(--paper-pink-a200);
+                    color: white !important;
+                };
+                --paper-button-raised-keyboard-focus: {
+                    background-color: var(--paper-pink-a200) !important;
+                    color: white !important;
+                };
+                float: right;
+            }
+            paper-button.custom:hover {
+                background-color: var(--paper-green-100);
+            }
+            paper-button.green {
+                background-color: var(--paper-green-500);
+                color: white;
+            }
+            paper-button.green[active] {
+                background-color: var(--paper-green-500);
+            }
+            #toast2 {
+                --paper-toast-background-color: var(--paper-blue-500);
+                --paper-toast-color: white;
+            }
+            #toast3 {
+                --paper-toast-background-color: var(--paper-red-500);
+                --paper-toast-color: white;
+            }
+            #toast4 {
+                --paper-toast-background-color: var(--paper-red-500);
+                --paper-toast-color: white;
+            }
+        </style>
+        <paper-card heading="¡Apúntate al Reencuentro!">
+            <template is="dom-if" if="{{puedeRellenar}}">            
+                <div class="card-content">
+                    <paper-input required minlength="5" id="nombre" label="Nombre y Apellidos">
+                        <iron-icon icon="account-circle" suffix></iron-icon>
+                    </paper-input>
+                    <paper-input required id="email" type="email" label="Email">
+                        <div suffix>@</div>
+                    </paper-input>
+                    <iron-grid>
+                        <div class="s12 m6">
+                            <paper-toggle-button>¡Trae a alguien más contigo!</paper-toggle-button>
+                        </div>
+                        <div class="s12 m6">
+                            <paper-input required id="invitados" label="Invitados (máx 2)" type="number" max="2" min="0">
+                            </paper-input>                            
+                        </div>
+                    </iron-grid>
+                </div>
+                <div class="card-actions">
+                    <paper-button on-tap="validarForm" toggles raised class="custom green">¡Apúntate ya!</paper-button>
+                </div>
+            </template>
+            <template is="dom-if" if="{{!puedeRellenar}}">            
+                Parece que te has registrado ya. Esperamos que lo disfrutes.
+            </template>
+        </paper-card>
+        <paper-toast id="toast2" class="fit-bottom" text="Genial, te acabas de apuntar. Te llamaremos para que puedas asistir!"></paper-toast>
+        <paper-toast id="toast3" class="fit-bottom" text="Ha habido algún error. Prueba de nuevo o contacta con Alejandro para que te incluyas!"></paper-toast>
+        <paper-toast id="toast4" class="fit-bottom" text="Ya te has registrado. Lo sentimos pero sólo puedes hacerlo una vez. ¡Disfruta del reencuentro!"></paper-toast>
+        <firebase-app
+            name="Reencuentro"
+            api-key="AIzaSyAHyaoHExZG2ESyGhOnLerUjku28uqVke8"
+            auth-domain="reencuentro-845cc.firebaseapp.com"
+            database-url="https://reencuentro-845cc.firebaseio.com">
+        </firebase-app>
+
+        <firebase-document
+            app-name="Reencuentro"
+            id="registrado"
+            data="{{registroData}}">
+        </firebase-document>
+    </template>
+    <script>
+        Polymer({
+            is: 'reencuentro-form',
+            properties: {
+                registrados: Object,
+                registro: {
+                    type: Object,
+                    notify: true
+                },
+                puedeRellenar: {
+                    type: Boolean,
+                    notify: true
+                }
+            },
+            ready: function () {
+                if (this.validarSeHaInscrito()) {
+                    toast4.open();
+                }
+            },
+            validarSeHaInscrito: function () {
+                var registro = window.localStorage.getItem('registrado');
+                if (registro == 'ok') {
+                    this.puedeRellenar = false;
+                    return true;
+                } else {
+                    this.puedeRellenar = true;
+                    return false;
+                }
+            },
+            validarForm: function () {
+                if (this.validarSeHaInscrito()) {
+                    toast4.open();
+                    return false;
+                }
+                var nombre = document.getElementById('nombre');
+                var email = document.getElementById('email');
+                var invitados = document.getElementById('invitados');
+                if (nombre.validate() && email.validate() && invitados.validate()) {
+                    this.set('registroData', {nombre: nombre.value, email: email.value, invitados: invitados.value});
+                    this.$.registrado.save('registrados');
+                    this.todoOk();
+                } else {
+                    this.todoKo();
+                }
+            },
+            todoOk: function () {
+                window.localStorage.setItem('registrado', 'ok');
+                toast2.open();
+            },
+            todoKo: function () {
+                toast3.open();
+            }
+        });
+    </script>
+</dom-module>
